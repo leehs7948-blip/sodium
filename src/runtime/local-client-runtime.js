@@ -37,6 +37,14 @@ export class LocalClientRuntime {
       await this.inputAdapter.wait(action.params.seconds);
     } else if (action.type === ActionType.MOVE_TO) {
       await this.inputAdapter.moveTo(action.params.position);
+    } else if (action.type === ActionType.CONTROL_STATE) {
+      await this.inputAdapter.controlState(action.params);
+    } else if (action.type === ActionType.HOTBAR_SELECT) {
+      await this.inputAdapter.hotbarSelect(action.params.slot);
+    } else if (action.type === ActionType.USE_ITEM) {
+      await this.inputAdapter.useItem(action.params);
+    } else if (action.type === ActionType.DIG_BLOCK) {
+      await this.inputAdapter.digBlock(action.params);
     } else {
       throw new Error(`Unsupported action type: ${action.type}`);
     }

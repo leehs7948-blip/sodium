@@ -4,16 +4,9 @@ import { RealExternalProcessor, __private } from '../src/real-external-processor
 
 test('normalizeAction drops invalid actions', () => {
   const { normalizeAction } = __private;
-  assert.equal(
-    normalizeAction({
-      botId: 'bot_mayor',
-      type: 'move_local',
-      params: { profile: { direction: 'forward', durationMs: 500 } },
-    })?.type,
-    'move_local',
-  );
+  assert.equal(normalizeAction({ botId: 'bot_mayor', type: 'control_state', params: { control: 'sprint', state: true } })?.type, 'control_state');
   assert.equal(normalizeAction({ botId: 'unknown', type: 'move_local', params: { profile: {} } }), null);
-  assert.equal(normalizeAction({ botId: 'bot_mayor', type: 'move_local', params: { profile: 'x' } }), null);
+  assert.equal(normalizeAction({ botId: 'bot_mayor', type: 'hotbar_select', params: { slot: 12 } }), null);
   assert.equal(normalizeAction({ botId: 'bot_mayor', type: 'say', params: { text: 'x' } }), null);
 });
 
@@ -28,8 +21,8 @@ test('createPlan parses actions from successful response', async () => {
       async json() {
         return {
           actions: [
-            { botId: 'bot_mayor', type: 'move_local', params: { profile: { direction: 'forward', durationMs: 700 } } },
-            { botId: 'bot_trouble', type: 'wait', params: { seconds: 1 } },
+            { botId: 'bot_mayor', type: 'control_state', params: { control: 'forward', state: true } },
+            { botId: 'bot_trouble', type: 'dig_block', params: { maxMs: 9000 } },
           ],
         };
       },
@@ -38,9 +31,9 @@ test('createPlan parses actions from successful response', async () => {
 
   try {
     const processor = new RealExternalProcessor({ endpoint: 'http://local.test/plan' });
-    const actions = await processor.createPlan({ source: 'owner', text: '광장' });
+    const actions = await processor.createPlan({ source: 'owner', text: '광질 시작' });
     assert.equal(actions.length, 2);
-    assert.equal(actions[0].type, 'move_local');
+    assert.equal(actions[0].type, 'control_state');
     assert.equal(typeof body.input.output_schema.actions[0].params.profile, 'object');
   } finally {
     global.fetch = originalFetch;
@@ -57,10 +50,7 @@ test('createPlan retries then fails when endpoint keeps failing', async () => {
 
   try {
     const processor = new RealExternalProcessor({ endpoint: 'http://local.test/plan', maxRetries: 1, timeoutMs: 50 });
-    await assert.rejects(
-      () => processor.createPlan({ source: 'owner', text: '광장' }),
-      /processor failed after retries/,
-    );
+    await assert.rejects(() => processor.createPlan({ source: 'owner', text: '광장' }), /processor failed after retries/);
     assert.equal(callCount, 2);
   } finally {
     global.fetch = originalFetch;

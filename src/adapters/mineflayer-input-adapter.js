@@ -88,6 +88,49 @@ export class MineflayerInputAdapter extends LocalInputAdapter {
     this.logger.log({ botId: this.botId, adapter: 'mineflayer', action: 'move_to', x, y, z, range });
   }
 
+
+  async controlState(params) {
+    if (!this.bot?.entity) return;
+    this.bot.setControlState(params.control, params.state);
+    this.logger.log({ botId: this.botId, adapter: 'mineflayer', action: 'control_state', ...params });
+  }
+
+  async hotbarSelect(slot) {
+    if (!this.bot) return;
+    this.bot.setQuickBarSlot(Number(slot));
+    this.logger.log({ botId: this.botId, adapter: 'mineflayer', action: 'hotbar_select', slot });
+  }
+
+  async useItem(params = {}) {
+    if (!this.bot) return;
+    const durationMs = Number(params.durationMs ?? 300);
+    this.bot.activateItem();
+    await sleep(durationMs);
+    this.bot.deactivateItem();
+    this.logger.log({ botId: this.botId, adapter: 'mineflayer', action: 'use_item', durationMs });
+  }
+
+  async digBlock(params = {}) {
+    if (!this.bot?.entity) return;
+    let block = null;
+    if (params.position && Number.isFinite(Number(params.position.x))) {
+      try {
+        const { Vec3 } = await import('vec3');
+        block = this.bot.blockAt(new Vec3(Number(params.position.x), Number(params.position.y), Number(params.position.z)));
+      } catch {
+        block = null;
+      }
+    }
+    if (!block) {
+      block = this.bot.blockAtCursor(5);
+    }
+    if (!block) {
+      this.logger.log({ botId: this.botId, adapter: 'mineflayer', action: 'dig_block_skipped', reason: 'no_target_block' });
+      return;
+    }
+    await this.bot.dig(block);
+    this.logger.log({ botId: this.botId, adapter: 'mineflayer', action: 'dig_block', block: block.name });
+  }
   async lookAt(target) {
     if (!this.bot?.entity) return;
     const mapping = this.config.lookTargets?.[target];

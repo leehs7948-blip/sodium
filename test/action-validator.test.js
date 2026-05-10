@@ -13,9 +13,16 @@ test('validateAction accepts local-only action', () => {
   );
 });
 
-test('forbidden action guard rejects server output actions', () => {
-  assert.throws(
-    () => ensureNoServerOutputAction({ type: 'say' }),
-    /Forbidden action type/,
+test('validateAction accepts advanced control action', () => {
+  assert.doesNotThrow(() =>
+    validateAction({
+      botId: 'bot_mayor',
+      type: 'control_state',
+      params: { control: 'sprint', state: true },
+    }),
   );
+});
+
+test('forbidden action guard rejects server output actions', () => {
+  assert.throws(() => ensureNoServerOutputAction({ type: 'say' }), /Forbidden action type/);
 });

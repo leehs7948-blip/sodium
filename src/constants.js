@@ -12,6 +12,10 @@ export const ActionType = Object.freeze({
   LOOK_AT: 'look_at',
   WAIT: 'wait',
   MOVE_TO: 'move_to',
+  CONTROL_STATE: 'control_state',
+  HOTBAR_SELECT: 'hotbar_select',
+  USE_ITEM: 'use_item',
+  DIG_BLOCK: 'dig_block',
 });
 
 export const Role = Object.freeze({
