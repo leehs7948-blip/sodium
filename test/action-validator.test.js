@@ -8,7 +8,7 @@ test('validateAction accepts local-only action', () => {
     validateAction({
       botId: 'bot_mayor',
       type: 'move_local',
-      params: { profile: 'to_square_path' },
+      params: { profile: { direction: 'forward', durationMs: 600, label: 'to_square_path' } },
     }),
   );
 });

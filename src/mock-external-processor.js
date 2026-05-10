@@ -7,14 +7,22 @@ export class MockExternalProcessor extends ExternalProcessor {
 
     if (text.includes('광장')) {
       return [
-        { botId: Role.MAYOR, type: ActionType.MOVE_LOCAL, params: { profile: 'to_square_path' } },
+        {
+          botId: Role.MAYOR,
+          type: ActionType.MOVE_LOCAL,
+          params: { profile: { direction: 'forward', durationMs: 1200, label: 'to_square_path' } },
+        },
         { botId: Role.MAYOR, type: ActionType.LOOK_AT, params: { target: 'main_stage' } },
       ];
     }
 
     if (text.includes('광산')) {
       return [
-        { botId: Role.TROUBLE, type: ActionType.MOVE_LOCAL, params: { profile: 'to_mine_path' } },
+        {
+          botId: Role.TROUBLE,
+          type: ActionType.MOVE_LOCAL,
+          params: { profile: { direction: 'right', durationMs: 900, label: 'to_mine_path' } },
+        },
         { botId: Role.TROUBLE, type: ActionType.LOOK_AT, params: { target: 'mine_direction' } },
       ];
     }

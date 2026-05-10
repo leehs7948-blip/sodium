@@ -7,6 +7,7 @@ Paper 1.21.4 기준으로 **mineflayer 두 봇(bot_mayor, bot_trouble)**을 실�
 - 요청은 항상 ExternalProcessor를 거쳐 액션 플랜 생성.
 - 서버 채팅 입력은 반응하지 않음(`chat_ignored`).
 - 대시보드에서 두 봇 동시/개별 제어 가능.
+- 기본 실행은 `enforcePolicies: true` (요청/액션 검증 활성화).
 
 ## 실행 전 환경변수
 - `MC_HOST` (default: `127.0.0.1`)
@@ -37,3 +38,8 @@ npm start
 ```bash
 npm test
 ```
+
+## move_local profile 규격
+- `params.profile.direction`: `forward | back | left | right | jump`
+- `params.profile.durationMs`: `100~10000`
+- `params.profile.label`: 선택 (로그 용도)

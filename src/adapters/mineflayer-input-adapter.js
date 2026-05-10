@@ -2,6 +2,19 @@ import mineflayer from 'mineflayer';
 import { LocalInputAdapter } from './local-input-adapter.js';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const DIRECTIONS = ['forward', 'back', 'left', 'right', 'jump'];
+
+function normalizeMoveProfile(profile) {
+  const raw = profile && typeof profile === 'object' ? profile : {};
+  const direction = DIRECTIONS.includes(raw.direction) ? raw.direction : 'forward';
+  const durationMs = Number.isFinite(Number(raw.durationMs)) ? Number(raw.durationMs) : 800;
+  const boundedDurationMs = Math.max(100, Math.min(10_000, durationMs));
+  return {
+    direction,
+    durationMs: boundedDurationMs,
+    label: typeof raw.label === 'string' ? raw.label : null,
+  };
+}
 
 export class MineflayerInputAdapter extends LocalInputAdapter {
   constructor(botId, logger, config) {
@@ -45,16 +58,14 @@ export class MineflayerInputAdapter extends LocalInputAdapter {
   async moveLocal(profile) {
     if (!this.bot?.entity) return;
 
-    const durationMs = Number(profile?.durationMs ?? 800);
-    const direction = String(profile?.direction ?? 'forward');
-    const allowed = ['forward', 'back', 'left', 'right', 'jump'];
-    const control = allowed.includes(direction) ? direction : 'forward';
+    const normalized = normalizeMoveProfile(profile);
+    const { direction, durationMs, label } = normalized;
 
-    this.bot.setControlState(control, true);
+    this.bot.setControlState(direction, true);
     await sleep(durationMs);
-    this.bot.setControlState(control, false);
+    this.bot.setControlState(direction, false);
 
-    this.logger.log({ botId: this.botId, adapter: 'mineflayer', action: 'move_local', direction, durationMs });
+    this.logger.log({ botId: this.botId, adapter: 'mineflayer', action: 'move_local', direction, durationMs, label });
   }
 
   async lookAt(target) {

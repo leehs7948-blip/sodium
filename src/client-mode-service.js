@@ -16,7 +16,7 @@ export class ClientModeService {
     processor = new MockExternalProcessor(),
     logger = new Logger(),
     inputAdapterFactory = (botId) => new MockInputAdapter(botId, logger),
-    enforcePolicies = false,
+    enforcePolicies = true,
   } = {}) {
     this.processor = processor;
     this.logger = logger;

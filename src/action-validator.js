@@ -15,8 +15,16 @@ export function validateAction(action) {
   }
 
   if (action.type === ActionType.MOVE_LOCAL) {
-    if (!action.params?.profile) {
+    const profile = action.params?.profile;
+    if (!profile || typeof profile !== 'object') {
       throw new Error('Invalid move_local params.profile');
+    }
+    const durationMs = Number(profile.durationMs ?? 800);
+    if (!Number.isFinite(durationMs) || durationMs < 100 || durationMs > 10_000) {
+      throw new Error('Invalid move_local params.profile.durationMs');
+    }
+    if (profile.direction != null && !['forward', 'back', 'left', 'right', 'jump'].includes(profile.direction)) {
+      throw new Error('Invalid move_local params.profile.direction');
     }
   }
 

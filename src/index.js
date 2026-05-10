@@ -2,6 +2,7 @@ import { ClientModeService } from './client-mode-service.js';
 import { RealExternalProcessor } from './real-external-processor.js';
 import { MineflayerInputAdapter } from './adapters/mineflayer-input-adapter.js';
 import { DashboardServer } from './dashboard-server.js';
+import { Logger } from './logger.js';
 
 async function main() {
   const endpoint = process.env.AI_PROCESSOR_ENDPOINT;
@@ -16,8 +17,9 @@ async function main() {
 
   const serverHost = process.env.MC_HOST ?? '127.0.0.1';
   const serverPort = Number(process.env.MC_PORT ?? 25565);
+  const logger = new Logger();
   const inputAdapterFactory = (botId) =>
-    new MineflayerInputAdapter(botId, console, {
+    new MineflayerInputAdapter(botId, logger, {
       host: serverHost,
       port: serverPort,
       username: process.env[`${botId.toUpperCase()}_USERNAME`] ?? botId,
@@ -25,7 +27,7 @@ async function main() {
       version: process.env.MC_VERSION ?? '1.21.4',
     });
 
-  const service = new ClientModeService({ processor, inputAdapterFactory, enforcePolicies: false });
+  const service = new ClientModeService({ processor, inputAdapterFactory, logger, enforcePolicies: true });
   await service.boot();
 
   const dashboard = new DashboardServer(service, { port: Number(process.env.DASHBOARD_PORT ?? 3100) });

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { ClientModeService } from '../src/client-mode-service.js';
 
 test('default mode executes owner request without policy restrictions', async () => {
-  const service = new ClientModeService();
+  const service = new ClientModeService({ enforcePolicies: false });
   await service.boot();
 
   const count = await service.submitRequest({ source: 'owner', text: '광장으로 이동' });
@@ -15,7 +15,7 @@ test('default mode executes owner request without policy restrictions', async ()
 });
 
 test('default mode does not block viewer command-like text', async () => {
-  const service = new ClientModeService();
+  const service = new ClientModeService({ enforcePolicies: false });
   await service.boot();
 
   const count = await service.submitRequest({ source: 'viewer', text: '/op me' });
@@ -50,7 +50,7 @@ test('policy mode rejects forbidden server-output actions from processor', async
 });
 
 test('server chat input is ignored with no reaction path', () => {
-  const service = new ClientModeService();
+  const service = new ClientModeService({ enforcePolicies: false });
   service.onServerChatReceived('viewer: /kill');
 
   const hasChatIgnoredLog = service.logger.logs.some((row) => row.event === 'chat_ignored');
