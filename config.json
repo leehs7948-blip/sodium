@@ -6,10 +6,16 @@
     "auth": "offline"
   },
   "bots": {
-    "bot_mayor": { "username": "bot_mayor" },
-    "bot_trouble": { "username": "bot_trouble" }
+    "bot_mayor": {
+      "username": "bot_mayor"
+    },
+    "bot_trouble": {
+      "username": "bot_trouble"
+    }
   },
-  "dashboard": { "port": 3100 },
+  "dashboard": {
+    "port": 3100
+  },
   "processor": {
     "endpoint": "",
     "model": "gpt-oss-20b",
@@ -18,8 +24,37 @@
   },
   "enforcePolicies": true,
   "lookTargets": {
-    "main_stage": { "yaw": 0, "pitch": 0 },
-    "crowd_zone": { "yaw": 1.2, "pitch": 0.1 },
-    "mine_direction": { "yaw": -1.57, "pitch": 0.1 }
+    "main_stage": {
+      "yaw": 0,
+      "pitch": 0
+    },
+    "crowd_zone": {
+      "yaw": 1.2,
+      "pitch": 0.1
+    },
+    "mine_direction": {
+      "yaw": -1.57,
+      "pitch": 0.1
+    }
+  },
+  "sodiumServer": {
+    "enabled": true,
+    "cwd": "./server",
+    "command": "java",
+    "args": [
+      "-Xms2G",
+      "-Xmx4G",
+      "-jar",
+      "server.jar",
+      "nogui"
+    ]
+  },
+  "dashboardApp": {
+    "command": "node",
+    "args": [
+      "src/index.js"
+    ],
+    "cwd": "./",
+    "healthTimeoutMs": 30000
   }
 }
