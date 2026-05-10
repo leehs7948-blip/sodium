@@ -19,24 +19,29 @@ test('normalizeAction drops invalid actions', () => {
 
 test('createPlan parses actions from successful response', async () => {
   const originalFetch = global.fetch;
-  global.fetch = async () => ({
-    ok: true,
-    async json() {
-      return {
-        actions: [
-          { botId: 'bot_mayor', type: 'move_local', params: { profile: 'to_square_path' } },
-          { botId: 'bot_mayor', type: 'move_local', params: { profile: { direction: 'forward', durationMs: 700 } } },
-          { botId: 'bot_trouble', type: 'wait', params: { seconds: 1 } },
-        ],
-      };
-    },
-  });
+  let body;
+
+  global.fetch = async (_url, init) => {
+    body = JSON.parse(init.body);
+    return {
+      ok: true,
+      async json() {
+        return {
+          actions: [
+            { botId: 'bot_mayor', type: 'move_local', params: { profile: { direction: 'forward', durationMs: 700 } } },
+            { botId: 'bot_trouble', type: 'wait', params: { seconds: 1 } },
+          ],
+        };
+      },
+    };
+  };
 
   try {
     const processor = new RealExternalProcessor({ endpoint: 'http://local.test/plan' });
     const actions = await processor.createPlan({ source: 'owner', text: '광장' });
     assert.equal(actions.length, 2);
     assert.equal(actions[0].type, 'move_local');
+    assert.equal(typeof body.input.output_schema.actions[0].params.profile, 'object');
   } finally {
     global.fetch = originalFetch;
   }

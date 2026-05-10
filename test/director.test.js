@@ -8,6 +8,8 @@ test('director creates local-control-only festival actions', () => {
 
   assert.equal(actions.length, 5);
   assert.equal(actions[0].type, 'move_local');
+  assert.equal(typeof actions[0].params.profile, 'object');
+  assert.equal(actions[0].params.profile.direction, 'forward');
   assert.equal(actions[1].type, 'look_at');
   assert.equal(actions.some((a) => a.type === 'say'), false);
 });
