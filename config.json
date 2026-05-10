@@ -1,0 +1,25 @@
+{
+  "minecraft": {
+    "host": "127.0.0.1",
+    "port": 25565,
+    "version": "1.21.4",
+    "auth": "offline"
+  },
+  "bots": {
+    "bot_mayor": { "username": "bot_mayor" },
+    "bot_trouble": { "username": "bot_trouble" }
+  },
+  "dashboard": { "port": 3100 },
+  "processor": {
+    "endpoint": "",
+    "model": "gpt-oss-20b",
+    "timeoutMs": 4000,
+    "maxRetries": 2
+  },
+  "enforcePolicies": true,
+  "lookTargets": {
+    "main_stage": { "yaw": 0, "pitch": 0 },
+    "crowd_zone": { "yaw": 1.2, "pitch": 0.1 },
+    "mine_direction": { "yaw": -1.57, "pitch": 0.1 }
+  }
+}

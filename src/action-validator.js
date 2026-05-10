@@ -34,6 +34,15 @@ export function validateAction(action) {
     }
   }
 
+
+
+  if (action.type === ActionType.MOVE_TO) {
+    const pos = action.params?.position;
+    if (!pos || !Number.isFinite(Number(pos.x)) || !Number.isFinite(Number(pos.y)) || !Number.isFinite(Number(pos.z))) {
+      throw new Error('Invalid move_to params.position');
+    }
+  }
+
   if (action.type === ActionType.WAIT) {
     const sec = action.params?.seconds;
     if (typeof sec !== 'number' || sec < 0 || sec > 60) {

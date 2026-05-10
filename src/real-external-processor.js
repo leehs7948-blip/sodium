@@ -2,7 +2,7 @@ import { ActionType, Role } from './constants.js';
 import { ExternalProcessor } from './external-processor.js';
 
 const ALLOWED_ROLES = new Set([Role.MAYOR, Role.TROUBLE]);
-const ALLOWED_ACTIONS = new Set([ActionType.MOVE_LOCAL, ActionType.LOOK_AT, ActionType.WAIT]);
+const ALLOWED_ACTIONS = new Set([ActionType.MOVE_LOCAL, ActionType.LOOK_AT, ActionType.WAIT, ActionType.MOVE_TO]);
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -25,6 +25,10 @@ function normalizeAction(raw) {
     if (!Number.isFinite(durationMs) || durationMs < 100 || durationMs > 10_000) return null;
   }
   if (type === ActionType.LOOK_AT && typeof params.target !== 'string') return null;
+  if (type === ActionType.MOVE_TO) {
+    const pos = params.position;
+    if (!pos || !Number.isFinite(Number(pos.x)) || !Number.isFinite(Number(pos.y)) || !Number.isFinite(Number(pos.z))) return null;
+  }
   if (type === ActionType.WAIT && typeof params.seconds !== 'number') return null;
 
   return { botId, type, params };
@@ -62,11 +66,12 @@ export class RealExternalProcessor extends ExternalProcessor {
         actions: [
           {
             botId: 'bot_mayor|bot_trouble',
-            type: 'move_local|look_at|wait',
+            type: 'move_local|look_at|wait|move_to',
             params: {
               profile: { direction: 'forward|back|left|right|jump', durationMs: 800, label: 'optional' },
               target: 'look_target_id',
               seconds: 1,
+              position: { x: 0, y: 64, z: 0, range: 1 },
             },
           },
         ],

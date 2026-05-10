@@ -18,6 +18,11 @@ export class MockInputAdapter extends LocalInputAdapter {
     this.logger.log({ botId: this.botId, adapter: 'mock_input', action: 'move_local', profile });
   }
 
+
+  async moveTo(position) {
+    this.logger.log({ botId: this.botId, adapter: 'mock_input', action: 'move_to', position });
+  }
+
   async lookAt(target) {
     this.logger.log({ botId: this.botId, adapter: 'mock_input', action: 'look_at', target });
   }

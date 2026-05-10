@@ -7,6 +7,10 @@ export class LocalInputAdapter {
     throw new Error('LocalInputAdapter.moveLocal must be implemented');
   }
 
+  async moveTo(_position) {
+    throw new Error('LocalInputAdapter.moveTo must be implemented');
+  }
+
   async lookAt(_target) {
     throw new Error('LocalInputAdapter.lookAt must be implemented');
   }

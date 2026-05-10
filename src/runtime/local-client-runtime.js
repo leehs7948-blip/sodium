@@ -35,6 +35,8 @@ export class LocalClientRuntime {
       await this.inputAdapter.lookAt(action.params.target);
     } else if (action.type === ActionType.WAIT) {
       await this.inputAdapter.wait(action.params.seconds);
+    } else if (action.type === ActionType.MOVE_TO) {
+      await this.inputAdapter.moveTo(action.params.position);
     } else {
       throw new Error(`Unsupported action type: ${action.type}`);
     }
