@@ -18,6 +18,10 @@ export class LocalClientRuntime {
   }
 
   async execute(action) {
+    if (this.stateStore.get(this.botId).state === BotState.STOPPED) {
+      throw new Error(`Bot ${this.botId} is stopped`);
+    }
+
     if (!this.connected) {
       throw new Error(`Bot ${this.botId} is not connected`);
     }
@@ -40,6 +44,7 @@ export class LocalClientRuntime {
   }
 
   async recover(error) {
+    this.connected = false;
     this.stateStore.setState(this.botId, BotState.RECOVERING);
     const count = this.stateStore.incrementFailCount(this.botId);
     this.logger.log({ botId: this.botId, event: 'recover', failCount: count, reason: error.message });

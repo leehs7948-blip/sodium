@@ -22,10 +22,20 @@ export class DashboardServer {
 
     this.app.post('/api/control', async (req, res) => {
       const { text, source = 'owner', targets = ['bot_mayor', 'bot_trouble'] } = req.body ?? {};
-      const count = await this.service.submitRequest({ source, text, targets });
-      await this.service.drain();
-      this.io.emit('state', this.service.getSnapshot());
-      res.json({ queued: count });
+      if (typeof text !== 'string' || !text.trim()) {
+        res.status(400).json({ error: 'text is required' });
+        return;
+      }
+
+      try {
+        const count = await this.service.submitRequest({ source, text, targets });
+        await this.service.drain();
+        this.io.emit('state', this.service.getSnapshot());
+        res.json({ queued: count });
+      } catch (error) {
+        this.service.logger.log({ event: 'dashboard_control_error', reason: error.message });
+        res.status(500).json({ error: error.message });
+      }
     });
 
     this.app.get('/', (_req, res) => {

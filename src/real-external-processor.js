@@ -15,7 +15,15 @@ function normalizeAction(raw) {
   if (!ALLOWED_ROLES.has(botId)) return null;
   if (!ALLOWED_ACTIONS.has(type)) return null;
 
-  if (type === ActionType.MOVE_LOCAL && typeof params.profile !== 'string') return null;
+  if (type === ActionType.MOVE_LOCAL) {
+    const profile = params.profile;
+    if (!profile || typeof profile !== 'object') return null;
+    if (profile.direction != null && !['forward', 'back', 'left', 'right', 'jump'].includes(profile.direction)) {
+      return null;
+    }
+    const durationMs = Number(profile.durationMs ?? 800);
+    if (!Number.isFinite(durationMs) || durationMs < 100 || durationMs > 10_000) return null;
+  }
   if (type === ActionType.LOOK_AT && typeof params.target !== 'string') return null;
   if (type === ActionType.WAIT && typeof params.seconds !== 'number') return null;
 
@@ -52,7 +60,15 @@ export class RealExternalProcessor extends ExternalProcessor {
       allowed_actions: [...ALLOWED_ACTIONS],
       output_schema: {
         actions: [
-          { botId: 'bot_mayor|bot_trouble', type: 'move_local|look_at|wait', params: {} },
+          {
+            botId: 'bot_mayor|bot_trouble',
+            type: 'move_local|look_at|wait',
+            params: {
+              profile: { direction: 'forward|back|left|right|jump', durationMs: 800, label: 'optional' },
+              target: 'look_target_id',
+              seconds: 1,
+            },
+          },
         ],
       },
     };

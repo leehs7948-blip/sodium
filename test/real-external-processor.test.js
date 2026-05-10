@@ -4,8 +4,16 @@ import { RealExternalProcessor, __private } from '../src/real-external-processor
 
 test('normalizeAction drops invalid actions', () => {
   const { normalizeAction } = __private;
-  assert.equal(normalizeAction({ botId: 'bot_mayor', type: 'move_local', params: { profile: 'x' } })?.type, 'move_local');
-  assert.equal(normalizeAction({ botId: 'unknown', type: 'move_local', params: { profile: 'x' } }), null);
+  assert.equal(
+    normalizeAction({
+      botId: 'bot_mayor',
+      type: 'move_local',
+      params: { profile: { direction: 'forward', durationMs: 500 } },
+    })?.type,
+    'move_local',
+  );
+  assert.equal(normalizeAction({ botId: 'unknown', type: 'move_local', params: { profile: {} } }), null);
+  assert.equal(normalizeAction({ botId: 'bot_mayor', type: 'move_local', params: { profile: 'x' } }), null);
   assert.equal(normalizeAction({ botId: 'bot_mayor', type: 'say', params: { text: 'x' } }), null);
 });
 
@@ -17,6 +25,7 @@ test('createPlan parses actions from successful response', async () => {
       return {
         actions: [
           { botId: 'bot_mayor', type: 'move_local', params: { profile: 'to_square_path' } },
+          { botId: 'bot_mayor', type: 'move_local', params: { profile: { direction: 'forward', durationMs: 700 } } },
           { botId: 'bot_trouble', type: 'wait', params: { seconds: 1 } },
         ],
       };
