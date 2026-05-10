@@ -51,4 +51,8 @@ export class StateStore {
     bot.failCount += 1;
     return bot.failCount;
   }
+
+  snapshot() {
+    return Object.fromEntries([...this.bots.entries()].map(([botId, value]) => [botId, { ...value }]));
+  }
 }

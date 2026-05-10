@@ -1,34 +1,39 @@
-# Sodium Client Mode (v0.1 scaffold)
+# Sodium Client Mode
 
-Paper 1.21.4 환경에서 **2개 AI 클라이언트(bot_mayor, bot_trouble)**를 이벤트 기반으로 조작하기 위한 최소 구현 스캐폴드입니다.
+Paper 1.21.4 기준으로 **mineflayer 두 봇(bot_mayor, bot_trouble)**을 실제 접속시켜 로컬에서 조작하고, 웹 대시보드에서 동시에 제어하는 프로젝트입니다.
 
-## 현재 운영 모드 (테스트 우선)
-- 기본값은 **제한 비활성화 모드**입니다.
-- 즉, 요청을 먼저 실행해 동작 검증을 하고 나중에 제한을 켤 수 있습니다.
-- 정책/가드가 필요한 경우 `ClientModeService({ enforcePolicies: true })`로 활성화합니다.
+## 핵심 동작
+- 입력은 `submitRequest()` 단일 경로로 처리.
+- 요청은 항상 ExternalProcessor를 거쳐 액션 플랜 생성.
+- 서버 채팅 입력은 반응하지 않음(`chat_ignored`).
+- 대시보드에서 두 봇 동시/개별 제어 가능.
 
-## AI 연동
-- 기본은 `MockExternalProcessor`를 사용합니다.
-- `AI_PROCESSOR_ENDPOINT` 환경변수가 있으면 `RealExternalProcessor`를 사용합니다.
-- `RealExternalProcessor`는 외부 API에 `{ model, input }` JSON을 POST하고, 응답의 `actions` 배열을 실행 플랜으로 사용합니다.
+## 실행 전 환경변수
+- `MC_HOST` (default: `127.0.0.1`)
+- `MC_PORT` (default: `25565`)
+- `MC_VERSION` (default: `1.21.4`)
+- `MC_AUTH` (default: `offline`)
+- `BOT_MAYOR_USERNAME` (default: `bot_mayor`)
+- `BOT_TROUBLE_USERNAME` (default: `bot_trouble`)
+- `DASHBOARD_PORT` (default: `3100`)
 
-환경변수:
-- `AI_PROCESSOR_ENDPOINT` (예: `http://127.0.0.1:8000/plan`)
-- `AI_MODEL` (기본: `gpt-oss-20b`)
-- `AI_TIMEOUT_MS` (기본: `4000`)
-- `AI_MAX_RETRIES` (기본: `2`)
+AI 프로세서(선택):
+- `AI_PROCESSOR_ENDPOINT`
+- `AI_MODEL` (default: `gpt-oss-20b`)
+- `AI_TIMEOUT_MS` (default: `4000`)
+- `AI_MAX_RETRIES` (default: `2`)
 
 ## 실행
-- `npm test`
-- `npm start`
+```bash
+npm install
+npm start
+```
 
-## 현재 구현
-- ExternalProcessor(Mock/Real): 텍스트 -> 로컬 조작 액션 플랜
-- LocalClientRuntime + InputAdapter: 런타임/입력 어댑터 분리
-- ClientModeService: `submitRequest()` 단일 입력 경로
-- 선택 기능: RequestPolicy + ForbiddenGuard + ActionValidator (정책 모드에서만 적용)
+브라우저에서 `http://127.0.0.1:3100` 접속 후 텍스트를 넣고
+- **두 봇 실행**: mayor/trouble 동시에 액션 생성/실행
+- **시장만 / 사건만**: 타겟팅 제어
 
-## 다음 단계
-- 정책 모드(`enforcePolicies: true`)를 운영환경에서 기본값으로 전환
-- MockInputAdapter를 실제 클라이언트 제어 어댑터로 교체
-- RealExternalProcessor를 실오프로드 API 규격에 맞춰 고정
+## 테스트
+```bash
+npm test
+```

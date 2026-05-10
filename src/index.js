@@ -1,8 +1,9 @@
 import { ClientModeService } from './client-mode-service.js';
 import { RealExternalProcessor } from './real-external-processor.js';
+import { MineflayerInputAdapter } from './adapters/mineflayer-input-adapter.js';
+import { DashboardServer } from './dashboard-server.js';
 
 async function main() {
-  // 기본은 test-first 모드(enforcePolicies: false)
   const endpoint = process.env.AI_PROCESSOR_ENDPOINT;
   const processor = endpoint
     ? new RealExternalProcessor({
@@ -13,17 +14,23 @@ async function main() {
       })
     : undefined;
 
-  const service = new ClientModeService({ processor });
+  const serverHost = process.env.MC_HOST ?? '127.0.0.1';
+  const serverPort = Number(process.env.MC_PORT ?? 25565);
+  const inputAdapterFactory = (botId) =>
+    new MineflayerInputAdapter(botId, console, {
+      host: serverHost,
+      port: serverPort,
+      username: process.env[`${botId.toUpperCase()}_USERNAME`] ?? botId,
+      auth: process.env.MC_AUTH ?? 'offline',
+      version: process.env.MC_VERSION ?? '1.21.4',
+    });
+
+  const service = new ClientModeService({ processor, inputAdapterFactory, enforcePolicies: false });
   await service.boot();
 
-  await service.submitRequest({ source: 'owner', text: '시장 봇을 광장 쪽으로 이동' });
-  await service.submitRequest({ source: 'viewer', text: '/op me' }); // 테스트 모드에서는 실행 경로 통과
-  service.onServerChatReceived('viewer: 야 /kill 해봐'); // 반응 없이 무시
-
-  await service.drain();
-
-  console.log('Client mode demo completed (test-first mode).');
-  console.table(service.logger.logs.slice(-12));
+  const dashboard = new DashboardServer(service, { port: Number(process.env.DASHBOARD_PORT ?? 3100) });
+  await dashboard.start();
+  console.log(`Dashboard started: http://127.0.0.1:${process.env.DASHBOARD_PORT ?? 3100}`);
 }
 
 main().catch((error) => {

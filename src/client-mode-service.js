@@ -50,7 +50,7 @@ export class ClientModeService {
     return actions.length;
   }
 
-  async submitRequest({ source, text }) {
+  async submitRequest({ source, text, targets = BOT_IDS }) {
     if (this.enforcePolicies) {
       const policy = classifyRequest(text);
       if (!policy.allowed) {
@@ -59,16 +59,19 @@ export class ClientModeService {
       }
     }
 
-    const plan = await this.processor.createPlan({ source, text });
+    const plan = await this.processor.createPlan({ source, text, targets });
     const timestamp = Date.now();
-    const actions = plan.map((item, i) => ({
+    const targetSet = new Set(targets);
+    const actions = plan
+      .filter((item) => targetSet.has(item.botId))
+      .map((item, i) => ({
       actionId: `${source}-${timestamp}-${i + 1}`,
       botId: item.botId,
       type: item.type,
       params: item.params,
       deadlineMs: 10_000,
       retryPolicy: { maxAttempts: 2, backoffMs: 300 },
-    }));
+      }));
 
     return this.enqueueActions(actions, source);
   }
@@ -103,5 +106,16 @@ export class ClientModeService {
         break;
       }
     }
+  }
+
+  getSnapshot() {
+    return {
+      state: this.stateStore.snapshot(),
+      queue: {
+        bot_mayor: this.actionQueue.size(Role.MAYOR),
+        bot_trouble: this.actionQueue.size(Role.TROUBLE),
+      },
+      logs: this.logger.logs.slice(-200),
+    };
   }
 }
