@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Sodium Desktop</title>
+<style>body{font-family:sans-serif;max-width:1100px;margin:18px auto;padding:0 12px}.section{border:1px solid #ddd;padding:10px;margin:10px 0}.row{display:flex;gap:8px;flex-wrap:wrap}button{padding:8px 10px}.danger{background:#c40000;color:#fff;font-size:16px;font-weight:bold}input{padding:6px}pre{background:#111;color:#0f0;padding:8px;min-height:120px;overflow:auto}</style></head><body>
+<h2>Sodium Desktop</h2>
+<div class="section"><h3>연결/재접속</h3><div class="row"><button onclick="reconnect('bot_mayor')">시장 재접속</button><button onclick="reconnect('bot_trouble')">사건봇 재접속</button><button onclick="reconnectAll()">전체 재접속</button></div></div>
+<div class="section"><h3>AI 명령</h3><textarea id="text" style="width:100%;height:70px"></textarea><div class="row"><button onclick="ai(['bot_mayor','bot_trouble'])">AI 두 봇</button><button onclick="processorTest()">LLM 연결 테스트</button><span id="llm"></span></div></div>
+<div class="section"><h3>수동 조작</h3><div class="row"><button onclick="manual('bot_mayor','look_at',{target:'main_stage'})">시장 LOOK</button><button onclick="manual('bot_trouble','move_local',{profile:{direction:'forward',durationMs:800}})">사건 MOVE</button></div></div>
+<div class="section"><h3>Playbook</h3><div class="row"><button onclick="playbook('festival_start')">festival_start</button></div></div>
+<div class="section"><h3>긴급 정지</h3><button class="danger" onclick="stopAll()">EMERGENCY STOP</button></div>
+<div class="section"><h3>설정</h3><div class="row"><input id="MC_HOST" placeholder="MC_HOST"><input id="MC_PORT" placeholder="MC_PORT"><input id="MC_VERSION" placeholder="MC_VERSION"><input id="MC_AUTH" placeholder="MC_AUTH"></div><div class="row"><input id="MAYOR" placeholder="bot_mayor username"><input id="TROUBLE" placeholder="bot_trouble username"></div><div class="row"><input id="AI_ENDPOINT" placeholder="AI_PROCESSOR_ENDPOINT" style="min-width:320px"><input id="AI_MODEL" placeholder="AI_MODEL"><label><input type="checkbox" id="SERVER_ENABLED"> sodiumServer.enabled</label><button onclick="saveConfig()">설정 저장</button></div><div id="saveMsg"></div></div>
+<div class="section"><h3>상태/로그</h3><pre id="state"></pre><pre id="logs"></pre></div>
+<script src="/socket.io/socket.io.js"></script><script>
+const stateEl=document.getElementById('state'),logsEl=document.getElementById('logs');
+function render(d){stateEl.textContent=JSON.stringify(d.state,null,2);logsEl.textContent=d.logs.map(x=>JSON.stringify(x)).join('\n');}
+async function refresh(){const r=await fetch('/api/state');render(await r.json());}
+async function ai(targets){await fetch('/api/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:document.getElementById('text').value,targets})});refresh();}
+async function manual(botId,type,params){await fetch('/api/manual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({botId,type,params})});refresh();}
+async function playbook(eventName){await fetch('/api/playbook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({eventName})});refresh();}
+async function stopAll(){await fetch('/api/emergency-stop',{method:'POST'});refresh();}
+async function reconnect(botId){await fetch('/api/reconnect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({botId})});refresh();}
+async function reconnectAll(){await fetch('/api/reconnect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({all:true})});refresh();}
+async function processorTest(){const r=await fetch('/api/processor-test',{method:'POST'});const d=await r.json();document.getElementById('llm').textContent=d.ok?'Local LLM connected':d.error;}
+async function loadConfig(){const r=await fetch('/api/config');const c=await r.json();MC_HOST.value=c.minecraft.host;MC_PORT.value=c.minecraft.port;MC_VERSION.value=c.minecraft.version;MC_AUTH.value=c.minecraft.auth;MAYOR.value=c.bots.bot_mayor.username;TROUBLE.value=c.bots.bot_trouble.username;AI_ENDPOINT.value=c.processor.endpoint;AI_MODEL.value=c.processor.model;SERVER_ENABLED.checked=!!c.sodiumServer.enabled;}
+async function saveConfig(){const payload={minecraft:{host:MC_HOST.value,port:Number(MC_PORT.value),version:MC_VERSION.value,auth:MC_AUTH.value},bots:{bot_mayor:{username:MAYOR.value},bot_trouble:{username:TROUBLE.value}},processor:{endpoint:AI_ENDPOINT.value,model:AI_MODEL.value},sodiumServer:{enabled:SERVER_ENABLED.checked}};const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const d=await r.json();saveMsg.textContent=d.message;}
+const s=io();s.on('state',render);loadConfig();refresh();
+</script></body></html>
